@@ -73,6 +73,7 @@
   },
   "pnpm": {
     "overrides": {
+      "@intlify/message-compiler": "^11.1.2",
       "form-data@4.0.2": "4.0.5",
       "koa@2.15.3": "2.16.3"
     }
