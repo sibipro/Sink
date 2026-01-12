@@ -70,5 +70,11 @@
     "*.{js,jsx,ts,tsx,vue}": [
       "eslint --fix"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "form-data@4.0.2": "4.0.5",
+      "koa@2.15.3": "2.16.3"
+    }
   }
 }
