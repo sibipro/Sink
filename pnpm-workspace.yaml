@@ -3,7 +3,7 @@ shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
   form-data@4.0.2: 4.0.5
-  koa@2.15.3: 2.16.3
+  koa@2.15.3: 2.16.4
 allowBuilds:
   esbuild: false
   maplibre-gl: false
