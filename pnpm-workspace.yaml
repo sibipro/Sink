@@ -1,5 +1,6 @@
 minimumReleaseAge: 20160
 minimumReleaseAgeExclude:
+  # Remove on or after 2026-06-26, once 4.0.6 clears the 14-day minimumReleaseAge.
   - form-data@4.0.6
 shamefullyHoist: true
 overrides:
