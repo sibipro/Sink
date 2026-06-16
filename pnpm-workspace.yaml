@@ -1,6 +1,6 @@
 minimumReleaseAge: 20160
 minimumReleaseAgeExclude:
-  - form-data
+  - form-data@4.0.6
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
