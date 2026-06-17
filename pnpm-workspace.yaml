@@ -1,8 +1,11 @@
 minimumReleaseAge: 20160
+minimumReleaseAgeExclude:
+  # Remove on or after 2026-06-26, once 4.0.6 clears the 14-day minimumReleaseAge.
+  - form-data@4.0.6
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
-  form-data@4.0.2: 4.0.5
+  form-data@<4.0.6: 4.0.6
   koa@2.15.3: 2.16.3
   tar: ^7.5.4
 allowBuilds:
