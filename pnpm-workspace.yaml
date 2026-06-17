@@ -9,6 +9,7 @@ overrides:
   koa@2.15.3: 2.16.3
   tar: ^7.5.4
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: false
   maplibre-gl: false
   simple-git-hooks: false
