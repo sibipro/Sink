@@ -1,0 +1,40 @@
+name: Preview E2E
+
+# Cloudflare Pages' GitHub integration posts a `deployment_status` event when a
+# preview (or production) deploy finishes. We run the Cucumber suite against the
+# real deployed URL — the only place the live KV / AI / Analytics bindings exist.
+# The local `nuxt dev` suite (ci.yml) uses workerd's local bindings, so it stays
+# green even when the Pages project's bindings are missing — which is exactly how
+# PR #19 took prod down and PR #20's revert failed to bring it back.
+on:
+  deployment_status:
+
+jobs:
+  e2e:
+    # Only run once the deploy actually succeeded and exposed a URL.
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment_url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read Node version
+        id: node
+        run: echo "version=$(cat .node-version)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests against the deployed preview
+        env:
+          SINK_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          # The preview may run with a non-default site token; supply it here if
+          # the Pages project overrides NUXT_SITE_TOKEN.
+          NUXT_SITE_TOKEN: ${{ secrets.NUXT_SITE_TOKEN }}
+        run: pnpm test

@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process'
 import process from 'node:process'
 import { setTimeout as delay } from 'node:timers/promises'
 import { AfterAll, BeforeAll, setDefaultTimeout } from '@cucumber/cucumber'
-import { baseURL, siteToken } from './world'
+import { baseURL, siteToken, usePreview } from './world'
 
 // A cold dev-server boot compiles the app; give hooks and steps room.
 setDefaultTimeout(120_000)
@@ -31,6 +31,12 @@ async function waitForServer(timeoutMs = 90_000): Promise<void> {
 }
 
 BeforeAll(async () => {
+  // Against a deployed preview there's nothing to boot; just confirm it's live.
+  if (usePreview) {
+    await waitForServer()
+    return
+  }
+
   const { port } = new URL(baseURL)
   // detached so we can kill the whole process group (nuxt spawns vite/workerd
   // children) in AfterAll. stderr inherits so startup failures are visible.
