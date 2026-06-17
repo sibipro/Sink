@@ -11,15 +11,20 @@ setDefaultTimeout(120_000)
 let server: ChildProcess | undefined
 
 async function waitForServer(timeoutMs = 90_000): Promise<void> {
-  // Probe a KV-backed endpoint: routes go live while Nuxt is still compiling
-  // (503 "loading") and the local KV binding initialises a beat after that, so
-  // a 200 here means the server is fully ready for the link scenarios.
-  const url = `${baseURL}/api/link/list`
+  // Local: probe a KV-backed endpoint and wait for a 200 — routes go live while
+  // Nuxt is still compiling (503 "loading") and the local KV binding initialises
+  // a beat after that, so a 200 means fully ready.
+  //
+  // Preview: the deploy is already live (CI gates this on the Cloudflare build),
+  // so probe a binding-free, auth-free route and accept ANY response. We must NOT
+  // require a working KV here — a broken binding has to surface as a scenario
+  // assertion (create → 500), not get swallowed as a readiness timeout.
+  const url = usePreview ? `${baseURL}/` : `${baseURL}/api/link/list`
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     try {
       const res = await fetch(url, { headers: { Authorization: `Bearer ${siteToken}` } })
-      if (res.status === 200)
+      if (usePreview || res.status === 200)
         return
     }
     catch {
@@ -27,7 +32,7 @@ async function waitForServer(timeoutMs = 90_000): Promise<void> {
     }
     await delay(500)
   }
-  throw new Error(`Dev server did not become ready at ${url} within ${timeoutMs}ms`)
+  throw new Error(`Server did not become ready at ${url} within ${timeoutMs}ms`)
 }
 
 BeforeAll(async () => {
