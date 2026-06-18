@@ -65,6 +65,32 @@ jobs:
           alias=$(printf '%s' "$REF" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | cut -c1-28)
           echo "url=https://${alias}.sink-2zy.pages.dev" >> "$GITHUB_OUTPUT"
 
+      - name: Wait for the preview URL to serve this commit
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          NUXT_SITE_TOKEN: ${{ secrets.NUXT_SITE_TOKEN }}
+        run: |
+          # A green Cloudflare build does NOT mean the branch-alias URL is serving
+          # this commit yet: the alias points at the latest *successful* deploy and
+          # cuts over a few seconds later — and on a brand-new branch it may not
+          # resolve at all for a moment (that's the 404-on-everything race that hit
+          # PR #25). Poll /api/verify until it reports THIS commit, so the suite never
+          # runs against a stale or not-yet-propagated deploy.
+          #
+          # We gate on commit identity, not on a status code: once the right deploy is
+          # live, a broken binding must still surface as a scenario failure (create →
+          # 500), not get swallowed here — same principle as hooks.ts readiness.
+          token="${NUXT_SITE_TOKEN:-SinkCool}"
+          for i in $(seq 1 60); do
+            served=$(curl -sf -H "Authorization: Bearer $token" "$URL/api/verify" \
+              | jq -r '.commit // empty' 2>/dev/null || true)
+            echo "attempt $i: served=${served:-<none>} want=$SHA"
+            [ "$served" = "$SHA" ] && exit 0
+            sleep 5
+          done
+          echo "::error::preview $URL never served commit $SHA"; exit 1
+
       - name: Run e2e against the deployed preview
         env:
           SINK_BASE_URL: ${{ steps.preview.outputs.url }}
