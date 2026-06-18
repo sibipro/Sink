@@ -8,6 +8,7 @@ overrides:
   form-data@<4.0.6: 4.0.6
   koa@2.15.3: 2.16.3
   tar: ^7.5.4
+  vite@<=6.4.2: 6.4.3
 allowBuilds:
   esbuild: false
   maplibre-gl: false
