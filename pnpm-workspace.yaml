@@ -10,6 +10,7 @@ overrides:
   tar: ^7.5.4
   vite@<=6.4.2: 6.4.3
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: false
   maplibre-gl: false
   sharp: false
