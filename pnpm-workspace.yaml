@@ -12,6 +12,7 @@ overrides:
 allowBuilds:
   esbuild: false
   maplibre-gl: false
+  sharp: false
   simple-git-hooks: false
   vue-demi: false
   workerd: false
