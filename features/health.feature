@@ -7,6 +7,10 @@ Feature: Server health
     When I request "/api/verify" with the site token
     Then the response identifies the app as "Sink"
 
+  Scenario: The verify endpoint reports which commit is deployed
+    When I request "/api/verify" with the site token
+    Then the response includes a commit field
+
   Scenario: Unauthenticated API requests are rejected
     When I request "/api/verify" without a token
     Then the response status is 401

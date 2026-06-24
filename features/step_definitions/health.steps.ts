@@ -21,3 +21,8 @@ Then('the response identifies the app as {string}', function (this: SinkWorld, n
 Then('the response status is {int}', function (this: SinkWorld, status: number) {
   assert.equal(this.response?.status, status)
 })
+
+Then('the response includes a commit field', function (this: SinkWorld) {
+  assert.equal(this.response?.status, 200)
+  assert.ok(this.body && 'commit' in this.body, 'expected a commit field in the verify response')
+})

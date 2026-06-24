@@ -53,8 +53,13 @@ export default defineNuxtConfig({
 
   nitro: {
     experimental: {
-      // Enable Server API documentation within NuxtHub
-      openAPI: true,
+      // NuxtHub's Server API documentation. Disabled: @nuxthub/core 0.7.11
+      // aliases #hub/openapi to nitropack's old `runtime/routes/openapi` path,
+      // which nitropack (>= 2.11.8, required by nuxt >= 3.16) moved under
+      // `runtime/internal/routes/`. The fix only landed in @nuxthub/core 0.8+,
+      // whose Pages->Workers architecture shift took production down in PR #19.
+      // Turning openAPI off avoids the broken alias while we stay on 0.7.x.
+      openAPI: false,
     },
   },
 

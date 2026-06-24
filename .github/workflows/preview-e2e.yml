@@ -1,0 +1,102 @@
+name: Preview E2E
+
+# Runs the Cucumber suite against the REAL Cloudflare Pages preview deploy, where
+# the live KV / AI / Analytics bindings exist. The local `nuxt dev` suite (ci.yml)
+# uses workerd's local bindings, so it stays green even when the deployed project's
+# bindings are missing — which is exactly how the June 2026 outage slipped through.
+#
+# Why pull_request (and not deployment_status): Cloudflare's git integration on this
+# repo does NOT create GitHub Deployments — it reports via a "Cloudflare Pages" check
+# run + a PR comment. And deployment_status workflows only run from the default branch,
+# so they can't gate the PR that introduces them. So instead we trigger on the PR, wait
+# for Cloudflare's check run to finish, then hit the deterministic branch-alias URL.
+on:
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read Node version
+        id: node
+        run: echo "version=$(cat .node-version)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for the Cloudflare Pages deploy of this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # The branch-alias URL points at the latest *successful* deploy of the
+          # branch, so we wait for THIS commit's Cloudflare build to conclude before
+          # testing — otherwise we'd race a stale deploy. A green build is not trust:
+          # it's just the signal that there's something deployed to test.
+          for i in $(seq 1 80); do
+            read -r status conclusion < <(gh api "repos/$REPO/commits/$SHA/check-runs" \
+              --jq '[.check_runs[] | select(.name=="Cloudflare Pages")][0] | "\(.status) \(.conclusion)"')
+            echo "attempt $i: status=$status conclusion=$conclusion"
+            if [ "$status" = "completed" ]; then
+              [ "$conclusion" = "success" ] && exit 0
+              echo "::error::Cloudflare Pages deploy concluded '$conclusion'"; exit 1
+            fi
+            sleep 15
+          done
+          echo "::error::Timed out waiting for the Cloudflare Pages deploy"; exit 1
+
+      - name: Derive branch-alias preview URL
+        id: preview
+        env:
+          REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # Cloudflare lowercases the branch, replaces non-alphanumerics with '-',
+          # and truncates to 28 chars to form the branch-alias subdomain.
+          alias=$(printf '%s' "$REF" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | cut -c1-28)
+          echo "url=https://${alias}.sink-2zy.pages.dev" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for the preview URL to serve this commit
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          NUXT_SITE_TOKEN: ${{ secrets.NUXT_SITE_TOKEN }}
+        run: |
+          # A green Cloudflare build does NOT mean the branch-alias URL is serving
+          # this commit yet: the alias points at the latest *successful* deploy and
+          # cuts over a few seconds later — and on a brand-new branch it may not
+          # resolve at all for a moment (that's the 404-on-everything race that hit
+          # PR #25). Poll /api/verify until it reports THIS commit, so the suite never
+          # runs against a stale or not-yet-propagated deploy.
+          #
+          # We gate on commit identity, not on a status code: once the right deploy is
+          # live, a broken binding must still surface as a scenario failure (create →
+          # 500), not get swallowed here — same principle as hooks.ts readiness.
+          token="${NUXT_SITE_TOKEN:-SinkCool}"
+          for i in $(seq 1 60); do
+            served=$(curl -sf -H "Authorization: Bearer $token" "$URL/api/verify" \
+              | jq -r '.commit // empty' 2>/dev/null || true)
+            echo "attempt $i: served=${served:-<none>} want=$SHA"
+            [ "$served" = "$SHA" ] && exit 0
+            sleep 5
+          done
+          echo "::error::preview $URL never served commit $SHA"; exit 1
+
+      - name: Run e2e against the deployed preview
+        env:
+          SINK_BASE_URL: ${{ steps.preview.outputs.url }}
+          # Set a NUXT_SITE_TOKEN repo secret if the Pages project overrides the
+          # default site token; otherwise the suite falls back to 'SinkCool'.
+          NUXT_SITE_TOKEN: ${{ secrets.NUXT_SITE_TOKEN }}
+        run: |
+          echo "Testing $SINK_BASE_URL"
+          pnpm test
