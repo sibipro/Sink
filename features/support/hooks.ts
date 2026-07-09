@@ -15,20 +15,34 @@ async function waitForServer(timeoutMs = 90_000): Promise<void> {
   // Nuxt is still compiling (503 "loading") and the local KV binding initialises
   // a beat after that, so a 200 means fully ready.
   //
-  // Preview: the deploy is already live (CI gates this on the Cloudflare build),
-  // so probe a binding-free, auth-free route and accept ANY response. We must NOT
-  // require a working KV here — a broken binding has to surface as a scenario
-  // assertion (create → 500), not get swallowed as a readiness timeout.
+  // Preview: the branch-alias URL cuts over to this commit's Cloudflare deploy
+  // per-PoP and eventually-consistently, so a single probe can land on a PoP that
+  // still 404s *everything* — the "404-on-everything" race that failed PR #25/#41,
+  // where the workflow gate confirmed the commit once but the suite fired ~1s later
+  // against a not-yet-propagated edge. So treat 404 as not-ready and keep polling,
+  // and require a few *consecutive* non-404s to ride past the cutover before any
+  // scenario fires. We still must NOT require a working KV — a broken binding has
+  // to surface as a scenario assertion (create → 500), not get swallowed here — so
+  // any non-404 status counts as ready.
   const url = usePreview ? `${baseURL}/` : `${baseURL}/api/link/list`
+  const stableNeeded = usePreview ? 3 : 1
   const deadline = Date.now() + timeoutMs
+  let stable = 0
   while (Date.now() < deadline) {
     try {
       const res = await fetch(url, { headers: { Authorization: `Bearer ${siteToken}` } })
-      if (usePreview || res.status === 200)
-        return
+      const ready = usePreview ? res.status !== 404 : res.status === 200
+      if (ready) {
+        if (++stable >= stableNeeded)
+          return
+      }
+      else {
+        stable = 0
+      }
     }
     catch {
-      // Connection refused — not listening yet.
+      // Connection refused / DNS not resolving yet — not listening.
+      stable = 0
     }
     await delay(500)
   }

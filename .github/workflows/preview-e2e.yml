@@ -81,12 +81,23 @@ jobs:
           # We gate on commit identity, not on a status code: once the right deploy is
           # live, a broken binding must still surface as a scenario failure (create →
           # 500), not get swallowed here — same principle as hooks.ts readiness.
+          #
+          # The cutover is per-PoP and eventually-consistent, so ONE positive probe
+          # doesn't mean the alias serves this commit everywhere — a later request
+          # (e.g. from the suite, ~1s on) can still hit a PoP that 404s. Require a few
+          # consecutive matches so we only proceed once propagation has settled.
           token="${NUXT_SITE_TOKEN:-SinkCool}"
+          stable=0
           for i in $(seq 1 60); do
             served=$(curl -sf -H "Authorization: Bearer $token" "$URL/api/verify" \
               | jq -r '.commit // empty' 2>/dev/null || true)
-            echo "attempt $i: served=${served:-<none>} want=$SHA"
-            [ "$served" = "$SHA" ] && exit 0
+            echo "attempt $i: served=${served:-<none>} want=$SHA (stable=$stable)"
+            if [ "$served" = "$SHA" ]; then
+              stable=$((stable + 1))
+              [ "$stable" -ge 3 ] && exit 0
+            else
+              stable=0
+            fi
             sleep 5
           done
           echo "::error::preview $URL never served commit $SHA"; exit 1
