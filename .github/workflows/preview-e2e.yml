@@ -61,8 +61,12 @@ jobs:
           REF: ${{ github.event.pull_request.head.ref }}
         run: |
           # Cloudflare lowercases the branch, replaces non-alphanumerics with '-',
-          # and truncates to 28 chars to form the branch-alias subdomain.
-          alias=$(printf '%s' "$REF" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | cut -c1-28)
+          # and truncates to 28 chars to form the branch-alias subdomain. The
+          # truncation can land on a '-', but a DNS label can't start or end with
+          # one, so Cloudflare strips leading/trailing hyphens from the result —
+          # we must too, or we poll a 404 host (e.g. 'remove-obsolete-min-release-'
+          # instead of Cloudflare's actual 'remove-obsolete-min-release').
+          alias=$(printf '%s' "$REF" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | cut -c1-28 | sed 's/^-*//; s/-*$//')
           echo "url=https://${alias}.sink-2zy.pages.dev" >> "$GITHUB_OUTPUT"
 
       - name: Wait for the preview URL to serve this commit

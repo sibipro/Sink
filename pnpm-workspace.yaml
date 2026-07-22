@@ -1,9 +1,4 @@
 minimumReleaseAge: 20160
-minimumReleaseAgeExclude:
-  # Remove on or after 2026-06-26, once 4.0.6 clears the 14-day minimumReleaseAge.
-  - form-data@4.0.6
-  # Remove on or after 2026-07-22, once 1.1.16 and 2.1.2 clear the 14-day minimumReleaseAge.
-  - brace-expansion@1.1.16 || 2.1.2
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
