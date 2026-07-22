@@ -1,4 +1,7 @@
 minimumReleaseAge: 20160
+minimumReleaseAgeExclude:
+  # Remove on or after 2026-07-25, once svgo 4.0.2 clears the 14-day minimumReleaseAge.
+  - svgo@4.0.2
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
