@@ -13,7 +13,7 @@ overrides:
   koa@<2.16.4: 2.16.4
   sharp@<0.35.0: 0.35.3
   tar: ^7.5.4
-  undici@<6.27.0: 6.27.0
+  undici@<6.28.0: 6.28.0
   vite@<=6.4.2: 6.4.3
   ws@<8.21.0: 8.21.0
 
@@ -7209,8 +7209,8 @@ packages:
   unctx@2.5.0:
     resolution: {integrity: sha512-p+Rz9x0R7X+CYDkT+Xg8/GhpcShTlU8n+cf9OtOEf7zEQsNcCZO1dPKNRDqvUTaq+P32PMMkxWHwfrxkqfqAYg==}
 
-  undici@6.27.0:
-    resolution: {integrity: sha512-YmfV3YnEDzXRC5lZ2jWtWWHKGUm1zIt8AhesR1tens+HTNv+YZlN/dp6G727LOvMJ8xjP9Be7Y2Sdr96LDm+pg==}
+  undici@6.28.0:
+    resolution: {integrity: sha512-LIY910g9TI13YS95lrMFrs8Rm/u/irgHeTWoKCoteeJ04CUJ92eEfj0rVn+7VKMPBpUPiUoBKfhNyLI23EE/KA==}
     engines: {node: '>=18.17'}
 
   unenv@2.0.0-rc.14:
@@ -11216,7 +11216,7 @@ snapshots:
       '@types/web-bluetooth': 0.0.21
       '@vueuse/metadata': 12.8.2
       '@vueuse/shared': 12.8.2(typescript@5.7.2)
-      vue: 3.5.13(typescript@5.7.2)
+      vue: 3.5.39(typescript@5.7.2)
     transitivePeerDependencies:
       - typescript
 
@@ -11251,7 +11251,7 @@ snapshots:
 
   '@vueuse/shared@12.8.2(typescript@5.7.2)':
     dependencies:
-      vue: 3.5.13(typescript@5.7.2)
+      vue: 3.5.39(typescript@5.7.2)
     transitivePeerDependencies:
       - typescript
 
@@ -14010,7 +14010,7 @@ snapshots:
       exit-hook: 2.2.1
       glob-to-regexp: 0.4.1
       stoppable: 1.1.0
-      undici: 6.27.0
+      undici: 6.28.0
       workerd: 1.20250718.0
       ws: 8.21.0
       youch: 3.3.4
@@ -15854,7 +15854,7 @@ snapshots:
       magic-string: 0.30.21
       unplugin: 2.3.11
 
-  undici@6.27.0: {}
+  undici@6.28.0: {}
 
   unenv@2.0.0-rc.14:
     dependencies:
