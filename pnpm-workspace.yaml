@@ -1,6 +1,8 @@
 minimumReleaseAge: 20160
 minimumReleaseAgeExclude:
   - undici@6.28.0
+  # Remove on or after 2026-08-07, once 8.5.23 clears the 14-day minimumReleaseAge.
+  - postcss@8.5.23
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
