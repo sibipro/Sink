@@ -21,6 +21,9 @@ export class SinkWorld extends World {
   response?: Response
   body?: any
   slug?: string
+  probeIsReadyAt?: (elapsedMs: number) => boolean
+  settledAtMs?: number
+  settleError?: Error
 }
 
 setWorldConstructor(SinkWorld)
