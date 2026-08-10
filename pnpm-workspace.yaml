@@ -5,6 +5,8 @@ minimumReleaseAgeExclude:
   - postcss@8.5.23
   # Remove on or after 2026-08-21, once 3.3.18 clears the 14-day minimumReleaseAge.
   - nanoid@3.3.18
+  # Remove on or after 2026-08-14, once 4.3.1 clears the 14-day minimumReleaseAge.
+  - js-yaml@4.3.1
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
