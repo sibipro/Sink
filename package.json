@@ -17,7 +17,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "nuxt typecheck",
-    "test": "NODE_OPTIONS='--import tsx' cucumber-js",
+    "test": "pnpm test:security && NODE_OPTIONS='--import tsx' cucumber-js",
+    "test:security": "node --test tests/security/*.test.mjs",
     "wrangler": "wrangler",
     "lint-staged": "lint-staged"
   },
