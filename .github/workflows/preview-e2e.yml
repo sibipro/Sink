@@ -9,7 +9,7 @@ name: Preview E2E
 # repo does NOT create GitHub Deployments — it reports via a "Cloudflare Pages" check
 # run + a PR comment. And deployment_status workflows only run from the default branch,
 # so they can't gate the PR that introduces them. So instead we trigger on the PR, wait
-# for Cloudflare's check run to finish, then hit the branch-alias URL it reports.
+# for Cloudflare's check run to finish, then hit the per-deployment URL it reports.
 on:
   pull_request:
 
@@ -40,9 +40,8 @@ jobs:
           REPO: ${{ github.repository }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          # The branch-alias URL points at the latest *successful* deploy of the
-          # branch, so we wait for THIS commit's Cloudflare build to conclude before
-          # testing — otherwise we'd race a stale deploy. A green build is not trust:
+          # THIS commit's per-deployment URL only exists once its Cloudflare build
+          # succeeds, so wait for the build to conclude. A green build is not trust:
           # it's just the signal that there's something deployed to test.
           for i in $(seq 1 80); do
             read -r status conclusion < <(gh api "repos/$REPO/commits/$SHA/check-runs" \
@@ -55,14 +54,15 @@ jobs:
             sleep 15
           done
           [ "$status" = "completed" ] || { echo "::error::Timed out waiting for the Cloudflare Pages deploy"; exit 1; }
-          # Read the branch alias Cloudflare reports instead of deriving it: when two
-          # branches truncate to the same 28-char alias, Cloudflare suffixes the newer
-          # one (e.g. 'chore-high-cve-sweep-2026-10-6bv7'), and the derived name would
-          # poll the older branch's deploy.
+          # Test the per-deployment URL (e.g. 'e51de312.sink-2zy.pages.dev'), not the
+          # branch alias: the alias is repointed at every new deploy of the branch, and
+          # two branches that truncate to the same 28-char alias get a suffixed one
+          # (Sink#77's 'chore-high-cve-sweep-2026-10-6bv7'), so a derived alias can
+          # serve another branch. The per-deployment URL only ever serves this deploy.
           url=$(gh api "repos/$REPO/commits/$SHA/check-runs" \
             --jq '[.check_runs[] | select(.name=="Cloudflare Pages")][0].output.summary
-              | capture("(?s)Branch Preview URL:.*?href=.(?<url>https://[a-z0-9.-]+)").url')
-          [ -n "$url" ] || { echo "::error::No Branch Preview URL in the Cloudflare Pages check run"; exit 1; }
+              | capture("(?s)<strong>Preview URL:.*?href=.(?<url>https://[a-z0-9.-]+)").url')
+          [ -n "$url" ] || { echo "::error::No Preview URL in the Cloudflare Pages check run"; exit 1; }
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Wait for the preview URL to serve this commit
@@ -71,25 +71,23 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
           NUXT_SITE_TOKEN: ${{ secrets.NUXT_SITE_TOKEN }}
         run: |
-          # A green Cloudflare build does NOT mean the branch-alias URL is serving
-          # this commit yet: the alias points at the latest *successful* deploy and
-          # cuts over a few seconds later — and on a brand-new branch it may not
-          # resolve at all for a moment (that's the 404-on-everything race that hit
-          # PR #25). Poll /api/verify until it reports THIS commit, so the suite never
-          # runs against a stale or not-yet-propagated deploy.
+          # A green Cloudflare build does NOT mean a fresh hostname resolves yet: it
+          # may 404 for a moment (the 404-on-everything race that hit PR #25 on a
+          # brand-new branch alias). Poll /api/verify until it reports THIS commit, so
+          # the suite never runs against a not-yet-propagated deploy.
           #
           # We gate on commit identity, not on a status code: once the right deploy is
           # live, a broken binding must still surface as a scenario failure (create →
           # 500), not get swallowed here — same principle as hooks.ts readiness.
           #
-          # The cutover is per-PoP and eventually-consistent, so positive probes don't
-          # mean the alias serves this commit everywhere — a later request (e.g. from
+          # Propagation is per-PoP and eventually-consistent, so positive probes don't
+          # mean the URL serves this commit everywhere — a later request (e.g. from
           # the suite) can still hit a PoP that 404s. Every probe here leaves the same
           # runner, and anycast routes them all to the SAME PoP, so we can't observe
           # the laggards: PR #42's 3 consecutive matches inside ~15s was satisfied by
           # one already-cut-over edge and PR #60 still flaked. Since the other PoPs are
           # unobservable, gate on elapsed time too — keep confirming across a window
-          # wide enough for the cutover to propagate, and restart the window on any
+          # wide enough for it to propagate, and restart the window on any
           # non-match. Mirrors features/support/settle.ts, which gates the suite itself.
           token="${NUXT_SITE_TOKEN:-SinkCool}"
           settle_seconds=45
