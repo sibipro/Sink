@@ -9,7 +9,7 @@ name: Preview E2E
 # repo does NOT create GitHub Deployments — it reports via a "Cloudflare Pages" check
 # run + a PR comment. And deployment_status workflows only run from the default branch,
 # so they can't gate the PR that introduces them. So instead we trigger on the PR, wait
-# for Cloudflare's check run to finish, then hit the deterministic branch-alias URL.
+# for Cloudflare's check run to finish, then hit the branch-alias URL it reports.
 on:
   pull_request:
 
@@ -34,6 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Wait for the Cloudflare Pages deploy of this commit
+        id: preview
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -48,26 +49,21 @@ jobs:
               --jq '[.check_runs[] | select(.name=="Cloudflare Pages")][0] | "\(.status) \(.conclusion)"')
             echo "attempt $i: status=$status conclusion=$conclusion"
             if [ "$status" = "completed" ]; then
-              [ "$conclusion" = "success" ] && exit 0
+              [ "$conclusion" = "success" ] && break
               echo "::error::Cloudflare Pages deploy concluded '$conclusion'"; exit 1
             fi
             sleep 15
           done
-          echo "::error::Timed out waiting for the Cloudflare Pages deploy"; exit 1
-
-      - name: Derive branch-alias preview URL
-        id: preview
-        env:
-          REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          # Cloudflare lowercases the branch, replaces non-alphanumerics with '-',
-          # and truncates to 28 chars to form the branch-alias subdomain. The
-          # truncation can land on a '-', but a DNS label can't start or end with
-          # one, so Cloudflare strips leading/trailing hyphens from the result —
-          # we must too, or we poll a 404 host (e.g. 'remove-obsolete-min-release-'
-          # instead of Cloudflare's actual 'remove-obsolete-min-release').
-          alias=$(printf '%s' "$REF" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | cut -c1-28 | sed 's/^-*//; s/-*$//')
-          echo "url=https://${alias}.sink-2zy.pages.dev" >> "$GITHUB_OUTPUT"
+          [ "$status" = "completed" ] || { echo "::error::Timed out waiting for the Cloudflare Pages deploy"; exit 1; }
+          # Read the branch alias Cloudflare reports instead of deriving it: when two
+          # branches truncate to the same 28-char alias, Cloudflare suffixes the newer
+          # one (e.g. 'chore-high-cve-sweep-2026-10-6bv7'), and the derived name would
+          # poll the older branch's deploy.
+          url=$(gh api "repos/$REPO/commits/$SHA/check-runs" \
+            --jq '[.check_runs[] | select(.name=="Cloudflare Pages")][0].output.summary
+              | capture("(?s)Branch Preview URL:.*?href=.(?<url>https://[a-z0-9.-]+)").url')
+          [ -n "$url" ] || { echo "::error::No Branch Preview URL in the Cloudflare Pages check run"; exit 1; }
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Wait for the preview URL to serve this commit
         env:
