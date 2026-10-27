@@ -21,7 +21,7 @@ overrides:
   simple-git@<4.0.1: 4.0.1
   source-map-js@<1.2.2: 1.2.2
   tar: ^7.5.4
-  undici@<6.28.1: 6.28.1
+  undici@<6.29.1: 6.29.1
   vite@<=6.4.3: 6.4.4
   ws@<8.21.0: 8.21.0
 
@@ -7061,8 +7061,8 @@ packages:
       unplugin:
         optional: true
 
-  undici@6.28.1:
-    resolution: {integrity: sha512-zWpdTVD54H48CIybL0rWQ3ukpb9d23wM7eH5RtfdmeP70cWHNjtfo7P4vZX+5CoDcO53J4Pu5uXp7lNfjc6DRA==}
+  undici@6.29.1:
+    resolution: {integrity: sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==}
     engines: {node: '>=18.17'}
 
   unenv@2.0.0-rc.14:
@@ -13747,7 +13747,7 @@ snapshots:
       exit-hook: 2.2.1
       glob-to-regexp: 0.4.1
       stoppable: 1.1.0
-      undici: 6.28.1
+      undici: 6.29.1
       workerd: 1.20250718.0
       ws: 8.21.0
       youch: 3.3.4
@@ -15600,7 +15600,7 @@ snapshots:
       oxc-parser: 0.140.0
       unplugin: 3.3.0(esbuild@0.25.5)(rollup@4.62.3)(vite@6.4.4(jiti@2.7.0)(terser@5.49.0)(tsx@4.22.4)(yaml@2.9.0))
 
-  undici@6.28.1: {}
+  undici@6.29.1: {}
 
   unenv@2.0.0-rc.14:
     dependencies:
