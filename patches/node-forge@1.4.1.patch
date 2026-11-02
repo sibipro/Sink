@@ -1,8 +1,8 @@
 diff --git a/lib/rsa.js b/lib/rsa.js
-index a4264822b4dcd6dca44ca3e59e410c982eed7183..43090545115be1b1ffc484a2a27ecf31f840437e 100644
+index 65f6e84..935e133 100644
 --- a/lib/rsa.js
 +++ b/lib/rsa.js
-@@ -1168,11 +1168,16 @@ pki.setRsaPublicKey = pki.rsa.setPublicKey = function(n, e) {
+@@ -1197,11 +1197,16 @@ pki.setRsaPublicKey = pki.rsa.setPublicKey = function(n, e) {
              parseAllBytes: options._parseAllDigestBytes
            });
  
