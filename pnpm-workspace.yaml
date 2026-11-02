@@ -8,6 +8,8 @@ minimumReleaseAgeExclude:
   - js-yaml@4.3.2
   # Remove on or after 2026-10-29, once 6.29.1 clears the 14-day minimumReleaseAge.
   - undici@6.29.1
+  # Remove on or after 2026-11-05, once 7.1.3 clears the 14-day minimumReleaseAge.
+  - serialize-javascript@7.1.3
 shamefullyHoist: true
 overrides:
   "@intlify/message-compiler": ^11.1.2
@@ -22,6 +24,7 @@ overrides:
   maplibre-gl@<6.4.1: 6.4.1
   nanoid@<3.3.17: 3.3.18
   postcss-selector-parser@<7.1.6: 7.1.6
+  serialize-javascript@<7.1.3: 7.1.3
   sharp@<0.35.5: 0.35.5
   simple-git@<4.0.1: 4.0.1
   source-map-js@<1.2.2: 1.2.2
