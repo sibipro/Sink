@@ -17,7 +17,7 @@ overrides:
   koa@<2.16.4: 2.16.4
   maplibre-gl@<6.4.1: 6.4.1
   nanoid@<3.3.17: 3.3.18
-  node-forge@<1.4.1: 1.4.1
+  node-forge@<1.4.3: 1.4.3
   postcss-selector-parser@<7.1.6: 7.1.6
   serialize-javascript@<7.1.3: 7.1.3
   seroval@<1.6.11: 1.6.11
@@ -31,7 +31,7 @@ overrides:
 
 patchedDependencies:
   '@nuxt/devtools@3.3.1': 6be09437d1863abb652afd60b33014e93f92ec17f75c9ba8cec605686376830f
-  node-forge@1.4.1: b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451
+  node-forge@1.4.3: b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451
 
 importers:
 
@@ -5668,8 +5668,8 @@ packages:
       encoding:
         optional: true
 
-  node-forge@1.4.1:
-    resolution: {integrity: sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==}
+  node-forge@1.4.3:
+    resolution: {integrity: sha512-P6wzfh6t70avmV8FrVEAd/36sOPJQ+hkaJVX1Laap9J/77m7M0eyozDvc8SwnDf4P7MP94gwbAAo0rg3YVXT+g==}
     engines: {node: '>= 6.13.0'}
 
   node-gyp-build@4.8.4:
@@ -13228,7 +13228,7 @@ snapshots:
       h3: 1.15.11
       http-shutdown: 1.2.2
       jiti: 2.7.0
-      node-forge: 1.4.1(patch_hash=b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451)
+      node-forge: 1.4.3(patch_hash=b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451)
       pathe: 2.0.3
       std-env: 4.2.0
       tinyclip: 0.1.15
@@ -13252,7 +13252,7 @@ snapshots:
       http-shutdown: 1.2.2
       jiti: 2.7.0
       mlly: 1.8.2
-      node-forge: 1.4.1(patch_hash=b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451)
+      node-forge: 1.4.3(patch_hash=b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451)
       pathe: 1.1.2
       std-env: 3.10.0
       ufo: 1.5.4
@@ -13974,7 +13974,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.1(patch_hash=b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451): {}
+  node-forge@1.4.3(patch_hash=b287a3658af60001140c0c56d6ccb73ececd6067f02a78c76dee969931e96451): {}
 
   node-gyp-build@4.8.4: {}
 
