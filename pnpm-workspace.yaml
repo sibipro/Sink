@@ -32,6 +32,3 @@ allowBuilds:
   simple-git-hooks: false
   vue-demi: false
   workerd: false
-patchedDependencies:
-  '@nuxt/devtools@3.3.1': patches/@nuxt__devtools@3.3.1.patch
-  node-forge@1.4.3: patches/node-forge@1.4.3.patch
